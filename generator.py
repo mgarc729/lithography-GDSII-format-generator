@@ -2,13 +2,13 @@ import numpy as np
 import gdspy
 
 
-def create_circle_polygons(x,y,radius, points=300):
+def create_circle_polygons(radius,initial_angle, final_angle, points=199):
 
-    theta = np.linspace(0, 2*np.pi, points)
-    a, b = radius * np.cos(theta) + x, radius * np.sin(theta) + y
+    theta = np.linspace(np.deg2rad(initial_angle), np.deg2rad(final_angle), points)
+    a, b = radius * np.cos(theta) , radius * np.sin(theta) 
     
-    return zip(a,b)
- 
+    return a,b
+
 def generate_array_pilars(distance, radius, overhang, number_rows, number_columns):
     """
         This methods generates the center point of the pilars
@@ -31,14 +31,22 @@ def generate_array_pilars(distance, radius, overhang, number_rows, number_column
 
     return set_of_points
 
+def create_wafer(cell, margin):
+    a, b = create_circle_polygons(1000 * 100, -71.03, 180 + 71.03,300)
+    cell.add(gdspy.Polygon(zip(a,b),2))
+    a, b = create_circle_polygons(1000 * (100 - margin), -71.03, 180 + 71.03,300)
+    cell.add(gdspy.Polygon(zip(a,b),3))
+
 def populate_dgs_file(filename, radius, overhang,array_of_points):
     pilars_cell = gdspy.Cell('PILLARS')
 
+    create_wafer(pilars_cell, 5)
 
     pilar_total_radius = radius + overhang
-
+    a,b = create_circle_polygons(pilar_total_radius,0,360)
     for point in array_of_points:
-        pilars_cell.add(gdspy.Polygon(create_circle_polygons(point[0], point[1], pilar_total_radius), 1))
+        points = zip(a + point[0], b + point[1])
+        pilars_cell.add(gdspy.Polygon(points, 1))
         
     gdspy.write_gds('{0}.gds'.format(filename), unit=1.0e-6, precision=1.0e-9)
 

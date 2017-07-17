@@ -3,3 +3,5 @@
 testt.py
 tutorial.py
 kyle.py
+*.swp
+*viewer.py
