@@ -1,5 +1,5 @@
 import numpy
-import pilar as Pilar
+import pillar as Pillar
 import grid as Grid
 from tools import generate_circle_points as gc
 import gdspy
@@ -95,7 +95,7 @@ class Wafer:
         self.sections = divisions
         
 
-    def generate_pilars(self, distance, radius, overhang, section=1):
+    def generate_pillars(self, distance, radius, overhang, section=1):
         if section not in range(1, self.sections + 1):
             raise ValueError("Selected Section has to be positive and less or equal to {0}".format(self.sections));
         
@@ -130,7 +130,7 @@ class Wafer:
 
 
         
-        pilars = Pilar.generate_pilars_region(  distance,
+        pilars = Pillar.generate_pilars_region(  distance,
                                                     total_radius, 
                                                     x, 
                                                     y, 
