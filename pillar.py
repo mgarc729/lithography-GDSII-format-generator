@@ -7,8 +7,8 @@ def generate_pilars_positions(distance, radius, x, y, width, height):
     pilars_x_axis = int(width / pair_distance)
     pilars_y_axis = int(height / pair_distance)
 
-    gap_x_axis = (width - (pilars_x_axis * pair_distance))/2 #gap both sides of the rectangle
-    gap_y_axis = (height - (pilars_y_axis * pair_distance))/2
+    gap_x_axis = (width - (pilars_x_axis * pair_distance))/2 + radius#gap both sides of the rectangle
+    gap_y_axis = (height - (pilars_y_axis * pair_distance))/2 + radius
 
     points = [] #set of positions
     for col in range(0, pilars_x_axis):
