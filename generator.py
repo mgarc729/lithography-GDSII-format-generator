@@ -30,6 +30,88 @@ def generate_array_pilars(distance, radius, overhang, number_rows, number_column
             set_of_points.append((left_boundary + col*distance, top_boundary + row*distance))
 
     return set_of_points
+def generate_grid(distance, thickness, number_rows, number_cols, width, height):
+
+    grid_cell = gdspy.Cell('GRID')
+    total_horizontal_gap = (number_cols - 1) * distance + thickness
+    total_vertical_gap = (number_rows - 1)* distance + thickness
+
+    horizontal_left = width - total_horizontal_gap
+    vertical_left = height - total_vertical_gap
+
+    horizontal_margin = horizontal_left/ 2
+    vertical_margin = vertical_left / 2
+
+    horizontal_start = -width/2 + horizontal_margin
+    vertical_start = height/2 - vertical_margin
+    
+    vertical_bars = []
+    horizontal_bars = []
+
+    for col in range(0, number_cols):
+        bar = gdspy.Rectangle((horizontal_start + col*distance,height/2),(horizontal_start + col*distance + thickness, -height/2),1)
+        #grid_cell.add(bar)
+        vertical_bars.append(bar)
+
+    for row in range(0, number_rows):
+        bar = gdspy.Rectangle((-width/2, vertical_start - row*distance),(width/2, vertical_start - row*distance - thickness),1)
+        #grid_cell.add(bar)
+        horizontal_bars.append(bar)
+
+    merged = gdspy.fast_boolean(vertical_bars, horizontal_bars, 'or', layer=1,max_points=0)
+    """
+    merged = None
+    for vertical in vertical_bars:
+        for horizontal in horizontal_bars:
+            merged = gdspy.fast_boolean(merged, horizontal, 'or', max_points=0)
+            merged = gdspy.fast_boolean(merged, vertical, 'or', max_points=0)
+    """
+    grid_cell.add(merged)
+    gdspy.write_gds('grid.gds', unit=1.0e-6, precision=1.0e-9)
+
+def generate_grid_copy(distance, thickness, number_rows, number_cols, width, height):
+
+    grid_cell = gdspy.Cell('GRID')
+    total_horizontal_gap = (number_cols - 1) * distance + thickness
+    total_vertical_gap = (number_rows - 1)* distance + thickness
+
+    horizontal_left = width - total_horizontal_gap
+    vertical_left = height - total_vertical_gap
+
+    horizontal_margin = horizontal_left/ 2
+    vertical_margin = vertical_left / 2
+
+    horizontal_start = -width/2 + horizontal_margin
+    vertical_start = height/2 - vertical_margin
+    
+    vertical_bars = []
+    horizontal_bars = []
+    squares = []
+    for col in range(0, number_cols):
+        for row in range(0, number_rows):
+            x = horizontal_start+thickness + col*(distance + thickness)
+            y = vertical_start + thickness - row*(distance + thickness)        
+            square = gdspy.Rectangle((x,y),(x + distance, y - distance),1)
+            #grid_cell.add(square)
+            squares.append(square)
+
+    """
+    for col in range(0, number_cols):
+        bar = gdspy.Rectangle((horizontal_start + col*distance,height/2),(horizontal_start + col*distance + thickness, -height/2),1)
+        #grid_cell.add(bar)
+        vertical_bars.append(bar)
+
+    for row in range(0, number_rows):
+        bar = gdspy.Rectangle((-width/2, vertical_start - row*distance),(width/2, vertical_start - row*distance - thickness),1)
+        #grid_cell.add(bar)
+        horizontal_bars.append(bar)
+    """
+    area = gdspy.Rectangle((height/2, -width/2),(-height/2,width/2),1)
+    merged = gdspy.fast_boolean(area,squares, 'not', max_points=0)
+   # merged = gdspy.fast_boolean(vertical_bars, horizontal_bars, 'or', max_points=0)
+    grid_cell.add(merged)
+    gdspy.write_gds('grid.gds', unit=1.0e-6, precision=1.0e-9)
+
 
 def create_wafer(cell, margin):
     a, b = create_circle_polygons(1000 * 100, -71.03, 180 + 71.03,300)
@@ -57,7 +139,7 @@ def generate_dsg_file(filename,distance, radius, overhang, number_rows, number_c
     populate_dgs_file(filename,radius, overhang, array_of_points)
 
 def main():
-    print generate_dsg_file(20,2,5,5,5)
+    generate_grid(10,2,10,10,150,150)
 
 
 if __name__ == "__main__":
