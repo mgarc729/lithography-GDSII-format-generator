@@ -2,7 +2,7 @@ import numpy as np
 from tools import generate_circle_points as gc
 
 def generate_pilars_positions(distance, radius, x, y, width, height):
-    pair_distance = distance + 2 * radius
+    pair_distance = (2 * radius) + (distance - 2*radius)
         
     pilars_x_axis = int(width / pair_distance)
     pilars_y_axis = int(height / pair_distance)
@@ -20,7 +20,7 @@ def generate_pilars_positions(distance, radius, x, y, width, height):
 def generate_pilars_region(distance, radius, x,y,width, height):
     points = generate_pilars_positions(distance, radius, x, y, width, height)
 
-    template_x, template_y = gc(radius, 0, 360, 10)
+    template_x, template_y = gc(radius, 0, 360, 100)
     pilars = []
     
     for point in points:

@@ -1,5 +1,6 @@
 import numpy
 import pilar as Pilar
+import grid as Grid
 from tools import generate_circle_points as gc
 import gdspy
 
@@ -100,21 +101,97 @@ class Wafer:
         
         total_radius = radius + overhang
 
+        x = 0
+        y = 0
+        width = 0
+        height = 0
+
         if self.sections == self._ONE_DIV:
             x = -self.size/2
             y = self.size/2
             
-            pilars_polygons = []
-            pilars = Pilar.generate_pilars_region(  distance,
-                                                    radius, 
+            width = self.size
+            height = self.size
+
+        elif self.sections == self._TWO_DIV:
+            if section == 1:
+                x = -self.size/2
+                y = self.size/2
+            
+                width = self.size
+                height = self.size/2
+            elif section == 2:
+                x = -self.size/2
+                y = 0
+            
+                width = self.size
+                height = self.size/2
+            
+
+
+        
+        pilars = Pilar.generate_pilars_region(  distance,
+                                                    total_radius, 
                                                     x, 
                                                     y, 
-                                                    self.size, 
-                                                    self.size)
-            for pilar in pilars:
-                poly = gdspy.Polygon(pilar, self.STRUCTURES_LAYER)
-                pilars_polygons.append(poly)
-                #self.cell.add(poly)
+                                                    width, 
+                                                    height)
 
-            merged = gdspy.fast_boolean(pilars_polygons, self.margin_polygon, 'and', layer=self.STRUCTURES_LAYER,max_points=0)
-            self.cell.add(merged)
+        pilars_polygons = []
+        for pilar in pilars:
+            poly = gdspy.Polygon(pilar, self.STRUCTURES_LAYER)
+            pilars_polygons.append(poly)
+
+        merged = gdspy.fast_boolean(pilars_polygons, self.margin_polygon, 'and', layer=self.STRUCTURES_LAYER,max_points=0)
+        self.cell.add(merged)
+
+    def generate_grid(self, distance, thickness, section=1):
+        if section not in range(1, self.sections + 1):
+            raise ValueError("Selected Section has to be positive and less or equal to {0}".format(self.sections));
+        
+        x = 0
+        y = 0
+
+        width = 0
+        height = 0
+
+        if self.sections == self._ONE_DIV:
+            x = -self.size/2
+            y = self.size/2
+        
+            width = self.size
+            height = self.size
+        elif self.sections == self._TWO_DIV:
+            if section == 1:
+                x = -self.size/2
+                y = self.size/2
+            
+                width = self.size
+                height = self.size/2
+            elif section == 2:
+                x = -self.size/2
+                y = 0
+            
+                width = self.size
+                height = self.size/2
+            
+
+
+        grid_polygons = []
+        horizontal, vertical = Grid.generate_grid_region(  distance,
+                                                    thickness, 
+                                                    x, 
+                                                    y, 
+                                                    width, 
+                                                    height)
+        for h in horizontal:
+            poly = gdspy.Rectangle(h[0], h[1], self.STRUCTURES_LAYER )
+            grid_polygons.append(poly)
+            
+        for v in vertical:
+            poly = gdspy.Rectangle(v[0], v[1], self.STRUCTURES_LAYER )
+            grid_polygons.append(poly)
+
+        merged = gdspy.fast_boolean(grid_polygons, self.margin_polygon, 'and', layer=self.STRUCTURES_LAYER,max_points=3000)
+        self.cell.add(merged)
+        
