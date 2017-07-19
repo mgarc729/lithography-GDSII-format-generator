@@ -11,13 +11,21 @@ class app_gui(tk.Tk):
         self.initialize()
         
         self.update_sections()
-        self.section_selector_cmb.current(0)
         
-
+        self.section_selector_cmb.current(0)
+        self.structure_selector_cmb.current(0)
+        self.radius_ent.insert(0,'0.0')
+        self.distance_ent.insert(0,'0.0')
+        self.filename_ent.insert(0, self.wafer.DEFAULT_FILENAME)
 
 
     def generate(self):
-        self.wafer.generate_setups()
+        filename = self.filename_ent.get()
+
+        if filename == self.wafer.DEFAULT_FILENAME:
+            self.wafer.generate_setups()
+        else:
+            self.wafer.generate_setups(filename)
 
     def generate_sections(self):
         number_rows = int(self.rows_ent.get())
@@ -38,7 +46,17 @@ class app_gui(tk.Tk):
             setup = self.wafer.setups[section]
             self.radius_ent.insert(0,str(setup['radius']))
             self.distance_ent.insert(0,str(setup['distance']))
-        except Exception:
+            
+            index = 0
+            for structure in self.wafer.STRUCTURES:
+                if structure == setup['structure']:
+                    break;
+                index += 1
+
+            self.structure_selector_cmb.current(index)
+
+        except Exception as e:
+            self.structure_selector_cmb.current(0)
             self.radius_ent.insert(0,'0.0')
             self.distance_ent.insert(0,'0.0')
 
@@ -46,8 +64,11 @@ class app_gui(tk.Tk):
         section = int(self.selected_section.get())
         radius = float(self.radius_ent.get())
         distance = float(self.distance_ent.get())
-
-        self.wafer.add_setup(distance, radius, self.wafer.PILLARS, section)
+        
+        self.wafer.add_setup(distance,
+                        radius, 
+                        self.wafer.STRUCTURES[self.structure_selector_cmb.current()], 
+                        section)
 
     def update_sections(self):
         self.section_selector_cmb['values'] = range(1, self.wafer.num_sections + 1)
@@ -55,14 +76,14 @@ class app_gui(tk.Tk):
     def initialize(self):
         #creating outer containers
         self.optionSection = tk.LabelFrame(self, text="Manage Sections")
-        self.structureSection = tk.LabelFrame(self.optionSection, text="Structures")
-
+        self.structureSection = tk.LabelFrame(self.optionSection, text="Options")
+        self.sub_structureSection = tk.LabelFrame(self.structureSection, text='Structure')
         #creating labels
         self.sections_gen_lbl = tk.Label(self.optionSection, text="Sections layout:")
         self.rows_lbl = tk.Label(self.optionSection, text="Rows:")
         self.cols_lbl = tk.Label(self.optionSection, text="Columns:")
 
-        self.filename_lbl = tk.Label(self.optionSection, text="Name of the file")
+        self.filename_lbl = tk.Label(self.optionSection, text="File name:")
 
         self.section_lbl = tk.Label(self.structureSection, text="Selected Section:")
         self.distance_lbl = tk.Label(self.structureSection, text="Distance between pilars(um):")
@@ -90,6 +111,10 @@ class app_gui(tk.Tk):
         self.selected_section = tk.StringVar()
         self.section_selector_cmb = ttk.Combobox(self.structureSection, width=5 ,textvariable=self.selected_section)
         self.section_selector_cmb.bind('<<ComboboxSelected>>', self.section_changed)
+        
+        self.selected_structure = tk.StringVar()
+        self.structure_selector_cmb = ttk.Combobox(self.sub_structureSection, width=5 ,textvariable=self.selected_structure)
+        self.structure_selector_cmb['values'] = self.wafer.STRUCTURES
 
         #adding components to the window
         self.optionSection.grid(row=0, column=0, padx=5, pady=5)
@@ -101,14 +126,15 @@ class app_gui(tk.Tk):
         self.generate_sections_btn.grid(row=3, column=0, padx=5, pady=5)
 
         self.structureSection.grid(row=4, column=0, columnspan=4, padx=5, pady=5)
+        self.sub_structureSection.grid(row=0, column=3, rowspan=1, padx=5, pady=5)
+        self.structure_selector_cmb.grid(row=0, column=0, padx=5, pady=5)
         self.section_lbl.grid(row=0, column=0,padx=5, pady=5)
         self.section_selector_cmb.grid(row=0, column=1, padx=5, pady=5)
         self.distance_lbl.grid(row=1, column=0,padx=5, pady=5)
         self.distance_ent.grid(row=1, column=1,padx=5)
         self.radius_lbl.grid(row=2, column=0,padx=5, pady=5)
         self.radius_ent.grid(row=2, column=1,padx=5)
-        #self.overhang_lbl.grid(row=3, column=0,padx=5, pady=5)
-        #self.overhang_ent.grid(row=3, column=1,padx=5)
+
         self.save_section_btn.grid(row=4, column=0,padx=5, pady=5)
         
         self.filename_lbl.grid(row=5, column=0,padx=5, pady=5)

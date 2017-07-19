@@ -33,8 +33,10 @@ class Wafer:
     
     PILLARS = 'Pillars'
     GRID = 'Grid'
-
-    def __init__(self,size, margin, filename="mask", unit=MICRONS, precision=NANOMETERS, cell_name = "WAFER"):
+    
+    STRUCTURES = [PILLARS, GRID]
+    DEFAULT_FILENAME = 'mask'
+    def __init__(self,size, margin, unit=MICRONS, precision=NANOMETERS, cell_name = "WAFER"):
         if size  not in self.SIZES:
             raise ValueError("The wafer must be a valid size: {0}".format(self.SIZES))
         
@@ -58,7 +60,6 @@ class Wafer:
         self._create_main_shape()
         self._create_margin_shape()
         self._create_drawing_area() 
-        self.filename = filename
         
         self.rows = 1
         self.cols = 1
@@ -91,8 +92,8 @@ class Wafer:
         self.drawing_x_step = self.drawing_width 
         self.drawing_y_step = self.drawing_height
 
-    def write(self):
-        gdspy.write_gds('{0}.gds'.format(self.filename), unit=self.unit, precision=self.precision)
+    def write(self, filename=DEFAULT_FILENAME):
+        gdspy.write_gds('{0}.gds'.format(filename), unit=self.unit, precision=self.precision)
 
     def partition(self, rows, cols):
         """
@@ -158,13 +159,13 @@ class Wafer:
             raise ValueError("Selected Section has to be less or equal than {0}".format(self.num_sections));
         self.setups[section] = {'radius':radius, 'distance':distance, 'structure':structure}
 
-    def generate_setups(self):
+    def generate_setups(self,filename=DEFAULT_FILENAME):
         for section, setup in self.setups.iteritems():
             self.generate_section_structures(setup['distance'],
                                                 setup['radius'],
                                                 setup['structure'],
                                                 section)
-        self.write()
+        self.write(filename)
 
 
 
