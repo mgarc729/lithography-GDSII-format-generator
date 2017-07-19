@@ -5,12 +5,12 @@ from tools import generate_circle_points as gc
 import gdspy
 
 class Wafer:
-    SIZE_2_IN= 50
+    SIZE_2_IN= 51
     SIZE_4_IN = 100
-    SIZE_8_IN = 150
-    SIZE_16_IN = 300
+    SIZE_6_IN = 150
+    SIZE_8_IN = 200
         
-    SIZES = [SIZE_2_IN, SIZE_4_IN, SIZE_8_IN, SIZE_16_IN]
+    SIZES = [SIZE_2_IN, SIZE_4_IN, SIZE_6_IN, SIZE_8_IN]
 
     _MM_IN_MICRONS = 1000 #the value of one mm in microns (1mm = 1000um)
     
@@ -19,10 +19,6 @@ class Wafer:
 
     _ZERO_DEGREES = 0
     _180_DEGREES = 180
-    
-    _ONE_DIV = 1
-    _TWO_DIV = 2
-    _FOUR_DIV = 4
 
     WAFER_LAYER = 1
     MARGIN_LAYER = 2
@@ -34,11 +30,9 @@ class Wafer:
     GAP_BETWEEN_SECTIONS = 1 * _MM_IN_MICRONS
 
     UNITS = [MICRONS, NANOMETERS]
-
-    DIVISIONS = [_ONE_DIV, _TWO_DIV, _FOUR_DIV]
     
-    PILLARS = 1
-    GRID = 2
+    PILLARS = 'Pillars'
+    GRID = 'Grid'
 
     def __init__(self,size, margin, filename="mask", unit=MICRONS, precision=NANOMETERS, cell_name = "WAFER"):
         if size  not in self.SIZES:
@@ -70,7 +64,7 @@ class Wafer:
         self.cols = 1
         self.num_sections = 1
 
-        self.sections = self._ONE_DIV 
+        self.setups = {}
 
     def _create_main_shape(self):
         a, b = gc( self.size/2,
@@ -128,7 +122,7 @@ class Wafer:
         width = self.drawing_x_step - self.GAP_BETWEEN_SECTIONS/2
         height = self.drawing_y_step - self.GAP_BETWEEN_SECTIONS/2
 
-
+        polygons = []
         if structure == self.PILLARS:
             pilars = Pillar.generate_pilars_region(  distance,
                                                     radius, 
@@ -137,15 +131,11 @@ class Wafer:
                                                     width, 
                                                     height)
 
-            pilars_polygons = []
             for pilar in pilars:
                 poly = gdspy.Polygon(pilar, self.STRUCTURES_LAYER)
-                pilars_polygons.append(poly)
+                polygons.append(poly)
 
-            merged = gdspy.fast_boolean(pilars_polygons, self.margin_polygon, 'and', layer=self.STRUCTURES_LAYER,max_points=0)
-            self.cell.add(merged)
         elif structure == self.GRID:
-            grid_polygons = []
             horizontal, vertical = Grid.generate_grid_region(  distance,
                                                     radius, 
                                                     x, 
@@ -154,116 +144,33 @@ class Wafer:
                                                     height)
             for h in horizontal:
                 poly = gdspy.Rectangle(h[0], h[1], self.STRUCTURES_LAYER )
-                grid_polygons.append(poly)
+                polygons.append(poly)
             
             for v in vertical:
                 poly = gdspy.Rectangle(v[0], v[1], self.STRUCTURES_LAYER )
-                grid_polygons.append(poly)
-
-            merged = gdspy.fast_boolean(grid_polygons, self.margin_polygon, 'and', layer=self.STRUCTURES_LAYER,max_points=3000)
-            self.cell.add(merged)
-    """
-    def generate_pillars(self, distance, radius, overhang, section=1):
-        if section not in range(1, self.sections + 1):
-            raise ValueError("Selected Section has to be positive and less or equal to {0}".format(self.sections));
-        
-        total_radius = radius + overhang
-
-        x = 0
-        y = 0
-        width = 0
-        height = 0
-
-        if self.sections == self._ONE_DIV:
-            x = -self.size/2
-            y = self.size/2
-            
-            width = self.size
-            height = self.size
-
-        elif self.sections == self._TWO_DIV:
-            if section == 1:
-                x = -self.size/2
-                y = self.size/2
-            
-                width = self.size
-                height = self.size/2
-            elif section == 2:
-                x = -self.size/2
-                y = 0
-            
-                width = self.size
-                height = self.size/2
-            
-
-        width += -self.GAP_BETWEEN_SECTIONS/2
-        height += -self.GAP_BETWEEN_SECTIONS/2
-
-
-        
-        pilars = Pillar.generate_pilars_region(  distance,
-                                                    total_radius, 
-                                                    x, 
-                                                    y, 
-                                                    width, 
-                                                    height)
-
-        pilars_polygons = []
-        for pilar in pilars:
-            poly = gdspy.Polygon(pilar, self.STRUCTURES_LAYER)
-            pilars_polygons.append(poly)
-
-        merged = gdspy.fast_boolean(pilars_polygons, self.margin_polygon, 'and', layer=self.STRUCTURES_LAYER,max_points=0)
+                polygons.append(poly)
+        self.setups[section] = {'radius':radius, 'distance':distance, 'structure':structure}
+        merged = gdspy.fast_boolean(polygons, self.margin_polygon, 'and', layer=self.STRUCTURES_LAYER,max_points=3000)
         self.cell.add(merged)
-    def generate_grid(self, distance, thickness, section=1):
-        if section not in range(1, self.sections + 1):
-            raise ValueError("Selected Section has to be positive and less or equal to {0}".format(self.sections));
-        
-        x = 0
-        y = 0
 
-        width = 0
-        height = 0
+    def add_setup(self, distance, radius, structure=PILLARS, section=1):
+        if section > self.num_sections:
+            raise ValueError("Selected Section has to be less or equal than {0}".format(self.num_sections));
+        self.setups[section] = {'radius':radius, 'distance':distance, 'structure':structure}
 
-        if self.sections == self._ONE_DIV:
-            x = -self.size/2
-            y = self.size/2
-        
-            width = self.size
-            height = self.size
-        elif self.sections == self._TWO_DIV:
-            if section == 1:
-                x = -self.size/2
-                y = self.size/2
-            
-                width = self.size
-                height = self.size/2
-            elif section == 2:
-                x = -self.size/2
-                y = 0
-            
-                width = self.size
-                height = self.size/2
-            
+    def generate_setups(self):
+        for section, setup in self.setups.iteritems():
+            self.generate_section_structures(setup['distance'],
+                                                setup['radius'],
+                                                setup['structure'],
+                                                section)
+        self.write()
 
-        width += -self.GAP_BETWEEN_SECTIONS/2
-        height += -self.GAP_BETWEEN_SECTIONS/2
 
-        grid_polygons = []
-        horizontal, vertical = Grid.generate_grid_region(  distance,
-                                                    thickness, 
-                                                    x, 
-                                                    y, 
-                                                    width, 
-                                                    height)
-        for h in horizontal:
-            poly = gdspy.Rectangle(h[0], h[1], self.STRUCTURES_LAYER )
-            grid_polygons.append(poly)
-            
-        for v in vertical:
-            poly = gdspy.Rectangle(v[0], v[1], self.STRUCTURES_LAYER )
-            grid_polygons.append(poly)
 
-        merged = gdspy.fast_boolean(grid_polygons, self.margin_polygon, 'and', layer=self.STRUCTURES_LAYER,max_points=3000)
-        self.cell.add(merged)
-    """        
+
+
+
+
+
+
