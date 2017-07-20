@@ -42,12 +42,17 @@ git clone https://github.com/mgarc729/lithography-GDSII-format-generator.git
 Install the prerequisites and execute: 
 
 ```
-chmod u=rx, g=rx, o=r install.sh 
+chmod 554 install.sh 
 ```
 ```
 ./install.sh
 ```
 
+To execute the program run:
+
+```
+./run.sh
+```
 
 ## Contributing
 
