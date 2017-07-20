@@ -3,6 +3,8 @@ import tkinter as tk
 import ttk
 from wafer import Wafer
 
+__version__ = '0.1.1'
+__author__ = 'Manuel Garcia'
 class app_gui(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
