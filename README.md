@@ -42,10 +42,12 @@ git clone https://github.com/mgarc729/lithography-GDSII-format-generator.git
 Install the prerequisites and execute: 
 
 ```
-chmod 554 install.sh 
-```
-```
 ./install.sh
+```
+If the previus command doesn't execute try executing this one first:
+
+```
+chmod 554 install.sh 
 ```
 
 To execute the program run:
