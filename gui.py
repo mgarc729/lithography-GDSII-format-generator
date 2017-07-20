@@ -73,6 +73,48 @@ class app_gui(tk.Tk):
     def update_sections(self):
         self.section_selector_cmb['values'] = range(1, self.wafer.num_sections + 1)
     
+    def check_only_int(self, event):
+        if event.char in '1234567890\b\t':
+            entry_text = event.widget.get()
+            if len(entry_text) == 0:
+                if event.char == '0':
+                    return 'break'
+            #print event.char
+        elif event.keysym not in ('Alt_r', 'Alt_L', 'F4'):
+            #print event.keysym
+            return 'break'
+
+
+    def check_only_float(self, event):
+        if event.char in '1234567890.\b\t':
+            entry_text = event.widget.get()
+            if event.char == '.':
+                if '.' in entry_text:
+                    return 'break'
+            if len(entry_text) == 1:
+                if entry_text[0] == '0':
+                    if event.char not in '.\b\t':
+                        return 'break'
+            #print event.char
+        elif event.keysym not in ('Alt_r', 'Alt_L', 'F4'):
+            #print event.keysym
+            return 'break'
+
+    def data_focus_out(self, event):
+        text = event.widget.get()
+        
+        if text == '':
+            event.widget.insert(0,'0.0')
+    
+    def row_col_focus_out(self, event):
+        text = event.widget.get()
+        
+        if text == '':
+            event.widget.insert(0,'1')
+    
+
+
+
     def initialize(self):
         #creating outer containers
         self.optionSection = tk.LabelFrame(self, text="Manage Sections")
@@ -100,8 +142,19 @@ class app_gui(tk.Tk):
 
         self.distance_ent = tk.Entry(self.structureSection, width = 10)
         self.radius_ent = tk.Entry(self.structureSection, width = 10)
-        #self.overhang_ent = tk.Entry(self.structureSection)
-    
+        
+        #binding float and int  checking methods to the entries
+        self.distance_ent.bind('<KeyPress>', self.check_only_float)
+        self.radius_ent.bind('<KeyPress>', self.check_only_float)
+        self.rows_ent.bind('<KeyPress>', self.check_only_int)
+        self.cols_ent.bind('<KeyPress>', self.check_only_int)
+
+        #binding focus management to components
+        self.distance_ent.bind('<FocusOut>', self.data_focus_out)
+        self.radius_ent.bind('<FocusOut>', self.data_focus_out)
+
+        self.rows_ent.bind('<FocusOut>', self.row_col_focus_out)
+        self.cols_ent.bind('<FocusOut>', self.row_col_focus_out)
         #creating buttons
         self.create_file_btn = tk.Button(self.optionSection, text="Create", command=self.generate)
         self.generate_sections_btn = tk.Button(self.optionSection, text="Generate", command=self.generate_sections)
