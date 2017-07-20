@@ -14,19 +14,19 @@ These instructions will get you a copy of the project up and running on your loc
 
 In order to use this program you need:
 
-* numpy
-* gdspy
+* numpy (v1.11.0)
+* gdspy (v1.1.2)
 
 Installing numpy:
 
 ```
-pip install numpy
+pip install numpy==1.11.0
 ```
 
 Installing gdspy:
 
 ```
-pip install gdspy
+pip install gdspy==1.1.2
 ```
 
 If it gives you some writing error you might want to execute these commands as sudo
@@ -42,7 +42,10 @@ git clone https://github.com/mgarc729/lithography-GDSII-format-generator.git
 Install the prerequisites and execute: 
 
 ```
-./run.sh
+chmod u=rx, g=rx, o=r install.sh 
+```
+```
+./install.sh
 ```
 
 
