@@ -1,10 +1,13 @@
+import thread
+import time
+
 import tkinter as tk
-#import generator as generator
 import ttk
 from wafer import Wafer
 
 __version__ = '0.1.1'
 __author__ = 'Manuel Garcia'
+
 class app_gui(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
@@ -20,22 +23,44 @@ class app_gui(tk.Tk):
         self.distance_ent.insert(0,'0.0')
         self.filename_ent.insert(0, self.wafer.DEFAULT_FILENAME)
 
+    def disable_controls(self, state):
+        state_text = 'normal'
+        if state:
+            state_text = 'disabled'
+
+        self.create_file_btn.config(state=state_text)
+        self.rows_ent.config(state=state_text)
+        self.cols_ent.config(state=state_text)
+        self.filename_ent.config(state=state_text)
+        self.distance_ent.config(state=state_text)
+        self.radius_ent.config(state=state_text)
+        self.generate_sections_btn.config(state=state_text)
+        self.save_section_btn.config(state=state_text)
+        self.section_selector_cmb.config(state=state_text)
+        self.structure_selector_cmb.config(state=state_text)
+       
+         
+    def generation_safe_thread(self, filename):
+        self.wafer.generate_setups(filename)
+        self.set_status_bar("Done creating file!",2)
+        self.disable_controls(False)
 
     def generate(self):
         filename = self.filename_ent.get()
 
-        if filename == self.wafer.DEFAULT_FILENAME:
-            self.wafer.generate_setups()
-        else:
-            self.wafer.generate_setups(filename)
+        my_thread = thread.start_new_thread( self.generation_safe_thread, (filename,) )
+        self.disable_controls(True)
 
+        self.set_status_bar("Creating {0}.gds file ...".format(filename),-1)
+        
     def generate_sections(self):
         number_rows = int(self.rows_ent.get())
         number_cols = int(self.cols_ent.get())
         
         self.wafer.partition(number_rows, number_cols)
         self.update_sections()
-
+        
+        self.set_status_bar("Maximum number of sections: {0}".format(number_rows*number_cols),2)
     def section_changed(self, something):
 
         
@@ -71,6 +96,7 @@ class app_gui(tk.Tk):
                         radius, 
                         self.wafer.STRUCTURES[self.structure_selector_cmb.current()], 
                         section)
+        self.set_status_bar("Section {0} saved!".format(section),2)
 
     def update_sections(self):
         self.section_selector_cmb['values'] = range(1, self.wafer.num_sections + 1)
@@ -114,14 +140,22 @@ class app_gui(tk.Tk):
         if text == '':
             event.widget.insert(0,'1')
     
+    def reset_status_bar(self,delay):
+        if delay != -1:
+            time.sleep(delay)
+            self.status_lbl.config(text="...")
 
-
+    def set_status_bar(self, message, delay):
+        self.status_lbl.config(text=message)
+        thread.start_new_thread( self.reset_status_bar, (delay,) )
 
     def initialize(self):
         #creating outer containers
         self.optionSection = tk.LabelFrame(self, text="Manage Sections")
         self.structureSection = tk.LabelFrame(self.optionSection, text="Options")
         self.sub_structureSection = tk.LabelFrame(self.structureSection, text='Structure')
+        self.statusSection = tk.LabelFrame(self)
+
         #creating labels
         self.sections_gen_lbl = tk.Label(self.optionSection, text="Sections layout:")
         self.rows_lbl = tk.Label(self.optionSection, text="Rows:")
@@ -132,8 +166,9 @@ class app_gui(tk.Tk):
         self.section_lbl = tk.Label(self.structureSection, text="Selected Section:")
         self.distance_lbl = tk.Label(self.structureSection, text="Distance between pilars(um):")
         self.radius_lbl = tk.Label(self.structureSection, text="Base radius(um):")
-        #self.overhang_lbl = tk.Label(self.structureSection, text="Overhang size (um)")
-        
+       
+        self.status_lbl = tk.Label(self.statusSection, text="Ready!")
+
         #creating text fields
         self.rows_ent = tk.Entry(self.optionSection, width = 10)
         self.rows_ent.insert(0,'1')
@@ -172,7 +207,12 @@ class app_gui(tk.Tk):
         self.structure_selector_cmb['values'] = self.wafer.STRUCTURES
 
         #adding components to the window
-        self.optionSection.grid(row=0, column=0, padx=5, pady=5)
+        self.optionSection.pack(padx=5, pady=2)
+        self.statusSection.pack(padx=5, pady=2, fill=tk.X)
+
+        
+        self.status_lbl.grid(row=0, column=0, padx=5, pady=5)
+
         self.sections_gen_lbl.grid(row=0, column=0, pady=5)
         self.cols_lbl.grid(row=1, column=0,padx=5, pady=5)
         self.cols_ent.grid(row=1, column=1,padx=5, pady=5)
@@ -201,5 +241,4 @@ class app_gui(tk.Tk):
 window = app_gui()
 window.title("GDS Lithograpy mask generator")
 
-#window.geometry("{0}x{1}+20+30".format(int(window.winfo_screenwidth()*0.75),int(window.winfo_screenheight()*0.5)))
 window.mainloop()

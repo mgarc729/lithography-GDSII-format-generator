@@ -1,7 +1,7 @@
 import numpy as np
 
-def generate_grid_region(distance, thickness, x, y, width, height):
- """Generate Grid structures in a specific area.
+def generate_grid_region(distance, thickness, x, y, width, height): 
+    """Generate Grid structures in a specific area.
     
     Args:
         distance: Distance from the center of one "wall" to the other.
