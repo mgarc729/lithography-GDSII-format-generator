@@ -14,16 +14,16 @@ These instructions will get you a copy of the project up and running on your loc
 
 In order to use this program you need:
 
-numpy
-gdspy
+* numpy
+* gdspy
 
-Installing numpy
+Installing numpy:
 
 ```
 pip install numpy
 ```
 
-Installing gdspy
+Installing gdspy:
 
 ```
 pip install gdspy
@@ -39,7 +39,7 @@ Clone the repository:
 git clone https://github.com/mgarc729/lithography-GDSII-format-generator.git
 ```
 
-Install the prerequisites and run 
+Install the prerequisites and execute: 
 
 ```
 ./run.sh
@@ -48,7 +48,7 @@ Install the prerequisites and run
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+Please read [CONTRIBUTING.md](https://github.com/mgarc729/lithography-GDSII-format-generator/blob/master/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## Versioning
 
