@@ -65,8 +65,8 @@ class Wafer:
    
     # Each wafer has a different starting and ending angle
     # where the flat mark is.
-    _ANGLES = {SIZE_4_IN:71.03}
-    _FLAT_FRAGMENTS = {SIZE_4_IN: 47.28}
+    _ANGLES = {SIZE_2_IN:71.86, SIZE_4_IN:71.03, SIZE_6_IN: 67.46}
+    _FLAT_FRAGMENTS = {SIZE_2_IN: 24.23, SIZE_4_IN: 47.28, SIZE_6_IN: 69.27}
 
     _ZERO_DEGREES = 0
     _180_DEGREES = 180

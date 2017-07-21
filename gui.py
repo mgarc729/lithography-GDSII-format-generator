@@ -12,13 +12,15 @@ class app_gui(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
 
-        self.wafer = Wafer(Wafer.SIZE_4_IN, 5)
+        self.wafer = Wafer(Wafer.SIZE_2_IN, 5)
         self.initialize()
         
         self.update_sections()
-        
+       
+        # Setting default values
         self.section_selector_cmb.current(0)
         self.structure_selector_cmb.current(0)
+        self.wafer_size_selector_cmb.current(0)
         self.radius_ent.insert(0,'0.0')
         self.distance_ent.insert(0,'0.0')
         self.filename_ent.insert(0, self.wafer.DEFAULT_FILENAME)
@@ -61,7 +63,7 @@ class app_gui(tk.Tk):
         self.update_sections()
         
         self.set_status_bar("Maximum number of sections: {0}".format(number_rows*number_cols),2)
-    def section_changed(self, something):
+    def section_changed(self, event):
 
         
         section = int(self.selected_section.get())
@@ -86,6 +88,11 @@ class app_gui(tk.Tk):
             self.structure_selector_cmb.current(0)
             self.radius_ent.insert(0,'0.0')
             self.distance_ent.insert(0,'0.0')
+    
+    def wafer_size_changed(self, event):
+        size = int(self.selected_wafer.get)
+
+
 
     def save_section(self):
         section = int(self.selected_section.get())
@@ -153,13 +160,15 @@ class app_gui(tk.Tk):
         #creating outer containers
         self.optionSection = tk.LabelFrame(self, text="Manage Sections")
         self.structureSection = tk.LabelFrame(self.optionSection, text="Options")
+        self.sectionsLayoutSection = tk.LabelFrame(self.optionSection, text="Sections Layout")
         self.sub_structureSection = tk.LabelFrame(self.structureSection, text='Structure')
         self.statusSection = tk.LabelFrame(self)
 
         #creating labels
-        self.sections_gen_lbl = tk.Label(self.optionSection, text="Sections layout:")
-        self.rows_lbl = tk.Label(self.optionSection, text="Rows:")
-        self.cols_lbl = tk.Label(self.optionSection, text="Columns:")
+        #self.sections_gen_lbl = tk.Label(self.optionSection, text="Sections layout:")
+        self.rows_lbl = tk.Label(self.sectionsLayoutSection, text="Rows:")
+        self.cols_lbl = tk.Label(self.sectionsLayoutSection, text="Columns:")
+        self.wafer_size_lbl = tk.Label(self.sectionsLayoutSection, text="Wafer Size(mm):")
 
         self.filename_lbl = tk.Label(self.optionSection, text="File name:")
 
@@ -170,11 +179,11 @@ class app_gui(tk.Tk):
         self.status_lbl = tk.Label(self.statusSection, text="Ready!")
 
         #creating text fields
-        self.rows_ent = tk.Entry(self.optionSection, width = 10)
+        self.rows_ent = tk.Entry(self.sectionsLayoutSection, width = 10)
         self.rows_ent.insert(0,'1')
-        self.cols_ent = tk.Entry(self.optionSection, width = 10)
+        self.cols_ent = tk.Entry(self.sectionsLayoutSection, width = 10)
         self.cols_ent.insert(0,'1')
-
+       
         self.filename_ent = tk.Entry(self.optionSection)
 
         self.distance_ent = tk.Entry(self.structureSection, width = 10)
@@ -189,12 +198,13 @@ class app_gui(tk.Tk):
         #binding focus management to components
         self.distance_ent.bind('<FocusOut>', self.data_focus_out)
         self.radius_ent.bind('<FocusOut>', self.data_focus_out)
-
+        
         self.rows_ent.bind('<FocusOut>', self.row_col_focus_out)
         self.cols_ent.bind('<FocusOut>', self.row_col_focus_out)
+
         #creating buttons
         self.create_file_btn = tk.Button(self.optionSection, text="Create", command=self.generate)
-        self.generate_sections_btn = tk.Button(self.optionSection, text="Generate", command=self.generate_sections)
+        self.generate_sections_btn = tk.Button(self.sectionsLayoutSection, text="Generate", command=self.generate_sections)
         self.save_section_btn = tk.Button(self.structureSection, text="Save", command=self.save_section)
 
         #creating section selector
@@ -206,21 +216,29 @@ class app_gui(tk.Tk):
         self.structure_selector_cmb = ttk.Combobox(self.sub_structureSection, width=5 ,textvariable=self.selected_structure)
         self.structure_selector_cmb['values'] = self.wafer.STRUCTURES
 
+        self.selected_wafer = tk.StringVar()
+        self.wafer_size_selector_cmb = ttk.Combobox(self.sectionsLayoutSection, width=5, textvariable=self.selected_wafer)
+        self.wafer_size_selector_cmb['values'] = self.wafer.SIZES
+
         #adding components to the window
         self.optionSection.pack(padx=5, pady=2)
         self.statusSection.pack(padx=5, pady=2, fill=tk.X)
-
+    
         
         self.status_lbl.grid(row=0, column=0, padx=5, pady=5)
 
-        self.sections_gen_lbl.grid(row=0, column=0, pady=5)
-        self.cols_lbl.grid(row=1, column=0,padx=5, pady=5)
-        self.cols_ent.grid(row=1, column=1,padx=5, pady=5)
-        self.rows_lbl.grid(row=2, column=0,padx=5, pady=5)
-        self.rows_ent.grid(row=2, column=1,padx=5, pady=5)
-        self.generate_sections_btn.grid(row=3, column=0, padx=5, pady=5)
+        #self.sections_gen_lbl.grid(row=0, column=0, pady=5)
+        self.sectionsLayoutSection.grid(row=0, column=0, columnspan=4, padx=5, pady=5)
+        self.cols_lbl.grid(row=0, column=0,padx=5, pady=5)
+        self.cols_ent.grid(row=0, column=1,padx=5, pady=5)
+        self.rows_lbl.grid(row=1, column=0,padx=5, pady=5)
+        self.rows_ent.grid(row=1, column=1,padx=5, pady=5)
+        self.generate_sections_btn.grid(row=2, column=0, padx=5, pady=5)
 
-        self.structureSection.grid(row=4, column=0, columnspan=4, padx=5, pady=5)
+        self.wafer_size_lbl.grid(row=0, column=2, padx=5, pady=5)
+        self.wafer_size_selector_cmb.grid(row=0, column=3, padx=5, pady=5)
+
+        self.structureSection.grid(row=1, column=0, columnspan=4, padx=5, pady=5)
         self.sub_structureSection.grid(row=0, column=3, rowspan=1, padx=5, pady=5)
         self.structure_selector_cmb.grid(row=0, column=0, padx=5, pady=5)
         self.section_lbl.grid(row=0, column=0,padx=5, pady=5)
