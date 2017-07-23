@@ -113,11 +113,9 @@ class Wafer:
         self.unit = unit
         self.precision = precision
         self.cell = gdspy.Cell(cell_name)
-
-        self._create_main_shape()
-        self._create_margin_shape()
-        self._create_drawing_area() 
+        self.cell_name = cell_name
         
+        self._create_drawing_area() 
         self.rows = 1
         self.cols = 1
         self.num_sections = 1
@@ -148,6 +146,10 @@ class Wafer:
         self.margin_polygon = gdspy.Polygon(self.margin_points, self.MARGIN_LAYER)
         self.cell.add(self.margin_polygon)
     
+    def _clear_library(self):
+        gdspy.Cell.cell_dict.pop(self.cell_name)
+        del self.cell
+
     def _create_drawing_area(self):
         """Creates a rectangular shape fits the margin area in it.
 
@@ -194,6 +196,23 @@ class Wafer:
         self.drawing_x_step = int(self.drawing_width/cols)  # Width of each section
         self.drawing_y_step = int(self.drawing_height/rows) # Height of each section
 
+
+    def change_wafer_size(self, size):
+        """Changes the size of the actual wafer.
+            
+        Args:
+            size: new size of the wafer
+
+        Raise:
+            ValueError: If the size is not in the list of possible wafer sizes
+        """
+        if size  not in self.SIZES:
+            raise ValueError("The wafer must be a valid size: {0}".format(self.SIZES))
+        
+        self.size = size * self._MM_IN_MICRONS
+
+        self._create_drawing_area()
+        self.partition(self.rows, self.cols)
 
     def _generate_section_structures(self, distance, radius, structure = PILLARS, section=1):
         """Generates the desired structures in the selected section.
@@ -279,9 +298,14 @@ class Wafer:
             raise ValueError("Selected Section has to be less or equal than {0}".format(self.num_sections));
         self.setups[section] = {'radius':radius, 'distance':distance, 'structure':structure}
 
+        #print dir(gdspy.Cell.get_polygons(self.cell).remove())
     def generate_setups(self,filename=DEFAULT_FILENAME):
         """Creates every setup in the file."""
-
+        
+        self._create_main_shape()
+        self._create_margin_shape()
+        
+   
         for section, setup in self.setups.iteritems():
             self._generate_section_structures(setup['distance'],
                                                 setup['radius'],
@@ -289,7 +313,7 @@ class Wafer:
                                                 section)
         self.write(filename)
 
-
+        #self._clear_library()
 
 
 

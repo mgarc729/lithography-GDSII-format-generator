@@ -40,7 +40,7 @@ class app_gui(tk.Tk):
         self.save_section_btn.config(state=state_text)
         self.section_selector_cmb.config(state=state_text)
         self.structure_selector_cmb.config(state=state_text)
-       
+        self.wafer_size_selector_cmb.config(state=state_text)       
          
     def generation_safe_thread(self, filename):
         self.wafer.generate_setups(filename)
@@ -90,9 +90,9 @@ class app_gui(tk.Tk):
             self.distance_ent.insert(0,'0.0')
     
     def wafer_size_changed(self, event):
-        size = int(self.selected_wafer.get)
+        size = int(self.selected_wafer.get())
 
-
+        self.wafer.change_wafer_size(size)
 
     def save_section(self):
         section = int(self.selected_section.get())
@@ -219,6 +219,7 @@ class app_gui(tk.Tk):
         self.selected_wafer = tk.StringVar()
         self.wafer_size_selector_cmb = ttk.Combobox(self.sectionsLayoutSection, width=5, textvariable=self.selected_wafer)
         self.wafer_size_selector_cmb['values'] = self.wafer.SIZES
+        self.wafer_size_selector_cmb.bind('<<ComboboxSelected>>', self.wafer_size_changed)
 
         #adding components to the window
         self.optionSection.pack(padx=5, pady=2)
