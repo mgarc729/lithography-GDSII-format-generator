@@ -17,7 +17,7 @@ In order to use this program you need:
 * numpy (v1.11.0)
 * gdspy (v1.1.2)
 
-If using Windows install Anaconda in https://www.continuum.io/downloads and all these commands should be executed using *Anaconda Prompt* application.
+If using Windows install Anaconda from https://www.continuum.io/downloads and all these commands should be executed using *Anaconda Prompt* application.
 
 Installing numpy (usually comes with python anaconda):
 
@@ -46,18 +46,7 @@ git clone https://github.com/mgarc729/lithography-GDSII-format-generator.git
 Install the prerequisites and execute: 
 
 ```
-./install.sh
-```
-If the previus command doesn't execute try executing this one first:
-
-```
-chmod 554 install.sh 
-```
-
-To execute the program run:
-
-```
-./run.sh
+python gui.py
 ```
 
 ## Contributing
