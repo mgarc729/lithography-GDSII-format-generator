@@ -25,6 +25,8 @@ pip install numpy==1.11.0
 
 Installing gdspy:
 
+If using windows you need Microsoft Visual C++ 9.0. You can get it from http://aka.ms/vcpython27 
+
 ```
 pip install gdspy==1.1.2
 ```
