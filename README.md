@@ -17,10 +17,12 @@ In order to use this program you need:
 * numpy (v1.11.0)
 * gdspy (v1.1.2)
 
-Installing numpy:
+If using Windows install Anaconda in https://www.continuum.io/downloads and all these commands should be executed using *Anaconda Prompt* application.
+
+Installing numpy (usually comes with python anaconda):
 
 ```
-pip install numpy==1.11.0
+pip install numpy==1.11.0 
 ```
 
 Installing gdspy:
