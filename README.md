@@ -55,7 +55,7 @@ Please read [CONTRIBUTING.md](https://github.com/mgarc729/lithography-GDSII-form
 
 ## Versioning
 
-We use [SemVer](http://semver.org/)  
+We use [SemVer](http://semver.org/). Stable version 1.1.0  
 
 ## Authors
 
@@ -67,5 +67,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
-* 
-*
+* Kyle Wilke, Mechanical Engineering Department at MIT for his advice.
