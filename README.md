@@ -17,13 +17,17 @@ In order to use this program you need:
 * numpy (v1.11.0)
 * gdspy (v1.1.2)
 
-Installing numpy:
+If using Windows install Anaconda from https://www.continuum.io/downloads and all these commands should be executed using *Anaconda Prompt* application.
+
+Installing numpy (usually comes with python anaconda):
 
 ```
-pip install numpy==1.11.0
+pip install numpy==1.11.0 
 ```
 
 Installing gdspy:
+
+If using windows you need Microsoft Visual C++ 9.0. You can get it from http://aka.ms/vcpython27 
 
 ```
 pip install gdspy==1.1.2
@@ -42,18 +46,7 @@ git clone https://github.com/mgarc729/lithography-GDSII-format-generator.git
 Install the prerequisites and execute: 
 
 ```
-./install.sh
-```
-If the previus command doesn't execute try executing this one first:
-
-```
-chmod 554 install.sh 
-```
-
-To execute the program run:
-
-```
-./run.sh
+python gui.py
 ```
 
 ## Contributing
@@ -62,7 +55,7 @@ Please read [CONTRIBUTING.md](https://github.com/mgarc729/lithography-GDSII-form
 
 ## Versioning
 
-We use [SemVer](http://semver.org/)  
+We use [SemVer](http://semver.org/). Stable version 1.1.0  
 
 ## Authors
 
@@ -74,5 +67,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
-* 
-*
+* Kyle Wilke, Mechanical Engineering Department at MIT for his advice.

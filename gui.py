@@ -1,7 +1,15 @@
 import thread
 import time
+import os
 
-import tkinter as tk
+if os.name== 'nt':
+    try: 
+        import Tkinter as tk
+    except ImportError as error:
+        print error
+else:
+    import tkinter as tk
+
 import ttk
 from wafer import Wafer
 
