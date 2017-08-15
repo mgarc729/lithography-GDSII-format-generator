@@ -20,7 +20,7 @@ def generate_pilars_positions(distance, radius, x, y, width, height):
 def generate_pilars_region(distance, radius, x,y,width, height):
     points = generate_pilars_positions(distance, radius, x, y, width, height)
 
-    template_x, template_y = gc(radius, 0, 360, 100)
+    template_x, template_y = gc(radius, 0, 360, 70)
     pilars = []
     
     for point in points:

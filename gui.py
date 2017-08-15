@@ -97,9 +97,7 @@ class app_gui(tk.Tk):
                 if entry_text[0] == '0':
                     if event.char not in '.\b\t':
                         return 'break'
-            #print event.char
         elif event.keysym not in ('Alt_r', 'Alt_L', 'F4'):
-            #print event.keysym
             return 'break'
 
     def data_focus_out(self, event):
