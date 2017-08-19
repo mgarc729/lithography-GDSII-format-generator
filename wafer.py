@@ -88,8 +88,10 @@ class Wafer:
     # Structures that can be generated
     PILLARS = 'Pillars'
     GRID = 'Grid'
+    LINES_V = 'Lines V'
+    LINES_H = 'Lines H'
     
-    STRUCTURES = [PILLARS, GRID]
+    STRUCTURES = [PILLARS, GRID, LINES_V, LINES_H]
 
     DEFAULT_FILENAME = 'mask'
 
@@ -139,10 +141,10 @@ class Wafer:
         margin units away from the wafer shape.
         """
 
-        a, b = gc(  (self.size/2 - self.margin),
-                self._ZERO_DEGREES - self.angle,
-                self._180_DEGREES + self.angle)
-        self.margin_points = zip(a,b)
+        a, b = gc((self.size/2 - self.margin),
+                   self._ZERO_DEGREES - self.angle,
+                   self._180_DEGREES + self.angle)
+        self.margin_points = zip(a, b)
         self.margin_polygon = gdspy.Polygon(self.margin_points, self.MARGIN_LAYER)
         self.cell.add(self.margin_polygon)
     
@@ -193,9 +195,8 @@ class Wafer:
         self.cols = cols
         self.rows = rows
         
-        self.drawing_x_step = int(self.drawing_width/cols)  # Width of each section
-        self.drawing_y_step = int(self.drawing_height/rows) # Height of each section
-
+        self.drawing_x_step = int(self.drawing_width/cols)   # Width of each section
+        self.drawing_y_step = int(self.drawing_height/rows)  # Height of each section
 
     def change_wafer_size(self, size):
         """Changes the size of the actual wafer.
@@ -206,7 +207,7 @@ class Wafer:
         Raise:
             ValueError: If the size is not in the list of possible wafer sizes
         """
-        if size  not in self.SIZES:
+        if size not in self.SIZES:
             raise ValueError("The wafer must be a valid size: {0}".format(self.SIZES))
         
         self.size = size * self._MM_IN_MICRONS
@@ -214,7 +215,22 @@ class Wafer:
         self._create_drawing_area()
         self.partition(self.rows, self.cols)
 
-    def _generate_section_structures(self, distance, radius, structure = PILLARS, section=1):
+    def change_margin(self, margin):
+        """
+        Changes the margin size of the wafer
+
+        This method changes the margin size of the wafer. It determines the area where the structures are gonna be
+        generated. There are no structures that fall outside the area described by the margin.
+
+        :param margin: size in mm of the margin where the structures are gonna be drawn
+        :return: void
+        """
+        self.margin = margin * self._MM_IN_MICRONS
+
+        self._create_drawing_area()
+        self.partition(self.rows, self.cols)
+
+    def _generate_section_structures(self, distance, radius, structure=PILLARS, section=1):
         """Generates the desired structures in the selected section.
 
         Args:
@@ -237,41 +253,53 @@ class Wafer:
         # Calculating starting coordinates of the section
         x = self.drawing_x + col * self.drawing_x_step
         y = self.drawing_y - row * self.drawing_y_step
-        
-        
+
         # Correcting width and height to respect the gap
         width = self.drawing_x_step - self.GAP_BETWEEN_SECTIONS/2 
         height = self.drawing_y_step - self.GAP_BETWEEN_SECTIONS/2
 
         polygons = []
         if structure == self.PILLARS:
-            pilars = Pillar.generate_pilars_region(  distance,
+            pillars = Pillar.generate_pilars_region(distance,
                                                     radius, 
                                                     x, 
                                                     y, 
                                                     width, 
                                                     height)
 
-            for pilar in pilars:
-                poly = gdspy.Polygon(pilar, self.STRUCTURES_LAYER)
+            for pillar in pillars:
+                poly = gdspy.Polygon(pillar, self.STRUCTURES_LAYER)
                 polygons.append(poly)
 
-        elif structure == self.GRID:
-            horizontal, vertical = Grid.generate_grid_region(  distance,
-                                                    radius, 
-                                                    x, 
-                                                    y, 
-                                                    width, 
-                                                    height)
-            for h in horizontal:
-                poly = gdspy.Rectangle(h[0], h[1], self.STRUCTURES_LAYER )
-                polygons.append(poly)
-            
-            for v in vertical:
-                poly = gdspy.Rectangle(v[0], v[1], self.STRUCTURES_LAYER )
-                polygons.append(poly)
+        else:
+            horizontal, vertical = Grid.generate_grid_region(distance,
+                                                             radius,
+                                                             x,
+                                                             y,
+                                                             width,
+                                                             height)
+            if structure == self.GRID:
 
-        self.setups[section] = {'radius':radius, 'distance':distance, 'structure':structure}
+                for h in horizontal:
+                    poly = gdspy.Rectangle(h[0], h[1], self.STRUCTURES_LAYER )
+                    polygons.append(poly)
+
+                for v in vertical:
+                    poly = gdspy.Rectangle(v[0], v[1], self.STRUCTURES_LAYER )
+                    polygons.append(poly)
+
+            elif structure == self.LINES_H:
+
+                for v in vertical:
+                    poly = gdspy.Rectangle(v[0], v[1], self.STRUCTURES_LAYER)
+                    polygons.append(poly)
+            elif structure == self.LINES_V:
+
+                for h in horizontal:
+                    poly = gdspy.Rectangle(h[0], h[1], self.STRUCTURES_LAYER)
+                    polygons.append(poly)
+
+        self.setups[section] = {'radius': radius, 'distance': distance, 'structure': structure}
         # The fitting the generated rectangular section in the Margin area
         merged = gdspy.fast_boolean(polygons, self.margin_polygon, 'and', layer=self.STRUCTURES_LAYER,max_points=3000)
         self.cell.add(merged)
@@ -298,22 +326,19 @@ class Wafer:
             raise ValueError("Selected Section has to be less or equal than {0}".format(self.num_sections));
         self.setups[section] = {'radius':radius, 'distance':distance, 'structure':structure}
 
-        #print dir(gdspy.Cell.get_polygons(self.cell).remove())
     def generate_setups(self,filename=DEFAULT_FILENAME):
         """Creates every setup in the file."""
         
         self._create_main_shape()
         self._create_margin_shape()
-        
-   
+
         for section, setup in self.setups.iteritems():
             self._generate_section_structures(setup['distance'],
-                                                setup['radius'],
-                                                setup['structure'],
-                                                section)
+                                              setup['radius'],
+                                              setup['structure'],
+                                              section)
         self.write(filename)
 
-        #self._clear_library()
 
 
 
